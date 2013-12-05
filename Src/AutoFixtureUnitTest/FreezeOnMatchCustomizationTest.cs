@@ -109,7 +109,7 @@ namespace Ploeh.AutoFixtureUnitTest
         [InlineData(typeof(ConcreteType), typeof(ConcreteType), true)]
         [InlineData(typeof(ConcreteType), typeof(AbstractType), true)]
         [InlineData(typeof(string), typeof(object), true)]
-        [InlineData(typeof(ConcreteType), typeof(object), false)]
+        [InlineData(typeof(ConcreteType), typeof(object), true)]
         [InlineData(typeof(int), typeof(string), false)]
         public void FreezeByMatchingBaseTypeShouldReturnTheRightSpecimen(
             Type frozenType,

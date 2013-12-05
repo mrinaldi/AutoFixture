@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Ploeh.AutoFixture.Kernel;
 
 namespace Ploeh.AutoFixture
@@ -10,8 +8,7 @@ namespace Ploeh.AutoFixture
         private readonly Type targetType;
         private readonly string identifier;
         private readonly Matching matchBy;
-        private readonly List<Type> matchingTypes;
-        private readonly List<IRequestSpecification> nameFilters;
+        private IFixture fixture;
 
         public FreezeOnMatchCustomization(
             Type targetType,
@@ -23,8 +20,6 @@ namespace Ploeh.AutoFixture
             this.targetType = targetType;
             this.identifier = identifier;
             this.matchBy = matchBy;
-            this.matchingTypes = new List<Type>();
-            this.nameFilters = new List<IRequestSpecification>();
         }
 
         public Type TargetType
@@ -41,39 +36,28 @@ namespace Ploeh.AutoFixture
         {
             Require.IsNotNull(fixture, "fixture");
 
-            var specimen = FreezeTargetType(fixture);
-            var types = MatchSpecimenByType(specimen);
-            var names = MatchSpecimenByName(specimen);
-            var builder = new CompositeSpecimenBuilder(types.Union(names));
-
-            fixture.Customizations.Insert(0, builder);
+            this.fixture = fixture;
+            MatchSpecimenByType();
+            MatchSpecimenByName();
         }
 
-        private ISpecimenBuilder FreezeTargetType(IFixture fixture)
-        {
-            var specimen = fixture.Create(this.targetType);
-            return new FixedBuilder(specimen);
-        }
-
-        private IEnumerable<ISpecimenBuilder> MatchSpecimenByType(ISpecimenBuilder specimen)
+        private void MatchSpecimenByType()
         {
             MatchByExactType();
             MatchByBaseType();
             MatchByImplementedInterfaces();
-            return MapSpecimenToTypeFilters(specimen);
         }
 
-        private IEnumerable<ISpecimenBuilder> MatchSpecimenByName(ISpecimenBuilder specimen)
+        private void MatchSpecimenByName()
         {
             MatchByPropertyName();
-            return MapSpecimenToNameFilters(specimen);
         }
 
         private void MatchByExactType()
         {
             if (this.matchBy.HasFlag(Matching.ExactType))
             {
-                matchingTypes.Add(this.targetType);
+                FreezeTypeForMatchingRequests(new ExactTypeSpecification(this.targetType));
             }
         }
 
@@ -81,7 +65,7 @@ namespace Ploeh.AutoFixture
         {
             if (this.matchBy.HasFlag(Matching.BaseType))
             {
-                matchingTypes.Add(this.targetType.BaseType ?? typeof(object));
+                FreezeTypeForMatchingRequests(new BaseTypeSpecification(this.targetType));
             }
         }
 
@@ -89,7 +73,7 @@ namespace Ploeh.AutoFixture
         {
             if (this.matchBy.HasFlag(Matching.ImplementedInterfaces))
             {
-                matchingTypes.AddRange(this.targetType.GetInterfaces());
+                FreezeTypeForMatchingRequests(new BaseTypeSpecification(this.targetType));
             }
         }
 
@@ -97,24 +81,22 @@ namespace Ploeh.AutoFixture
         {
             if (this.matchBy.HasFlag(Matching.PropertyName))
             {
-                nameFilters.Add(new PropertyNameSpecification(this.identifier));
+                FreezeTypeForMatchingRequests(new PropertyNameSpecification(this.identifier));
             }
         }
 
-        private IEnumerable<FilteringSpecimenBuilder> MapSpecimenToTypeFilters(ISpecimenBuilder specimen)
+        private void FreezeTypeForMatchingRequests(IRequestSpecification criteria)
         {
-            return from type in matchingTypes
-                   select SpecimenBuilderNodeFactory.CreateTypedNode(
-                       type,
-                       specimen);
+            this.fixture.Customizations.Add(
+                new FilteringSpecimenBuilder(
+                    FreezeTargetType(),
+                    criteria));
         }
 
-        private IEnumerable<FilteringSpecimenBuilder> MapSpecimenToNameFilters(ISpecimenBuilder specimen)
+        private ISpecimenBuilder FreezeTargetType()
         {
-            return from filter in nameFilters
-                   select new FilteringSpecimenBuilder(
-                       specimen,
-                       filter);
+            var specimen = new SpecimenContext(this.fixture).Resolve(this.targetType);
+            return new FixedBuilder(specimen);
         }
     }
 }
