@@ -5,9 +5,9 @@ namespace Ploeh.AutoFixture
     [Flags]
     public enum Matching
     {
-        ExactType = 0,
-        BaseType = 1,
-        ImplementedInterfaces = 2,
-        PropertyName = 4
+        ExactType = 1,
+        BaseType = 2,
+        ImplementedInterfaces = 4,
+        PropertyName = 8,
     }
 }

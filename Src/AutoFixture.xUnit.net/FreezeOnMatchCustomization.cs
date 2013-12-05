@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Ploeh.AutoFixture.Kernel;
 
 namespace Ploeh.AutoFixture.Xunit
@@ -8,6 +10,7 @@ namespace Ploeh.AutoFixture.Xunit
         private readonly Type targetType;
         private readonly string identifier;
         private readonly Matching matchBy;
+        private readonly ICollection<IRequestSpecification> filters;
         private IFixture fixture;
 
         public FreezeOnMatchCustomization(
@@ -20,6 +23,7 @@ namespace Ploeh.AutoFixture.Xunit
             this.targetType = targetType;
             this.identifier = identifier;
             this.matchBy = matchBy;
+            this.filters = new Collection<IRequestSpecification>();
         }
 
         public Type TargetType
@@ -39,6 +43,7 @@ namespace Ploeh.AutoFixture.Xunit
             this.fixture = fixture;
             MatchSpecimenByType();
             MatchSpecimenByName();
+            FreezeTypeForMatchingRequests();
         }
 
         private void MatchSpecimenByType()
@@ -55,42 +60,47 @@ namespace Ploeh.AutoFixture.Xunit
 
         private void MatchByExactType()
         {
-            if (this.matchBy.HasFlag(Matching.ExactType))
+            if (ShouldMatchBy(Matching.ExactType))
             {
-                FreezeTypeForMatchingRequests(new ExactTypeSpecification(this.targetType));
+                filters.Add(new ExactTypeSpecification(this.targetType));
             }
         }
 
         private void MatchByBaseType()
         {
-            if (this.matchBy.HasFlag(Matching.BaseType))
+            if (ShouldMatchBy(Matching.BaseType))
             {
-                FreezeTypeForMatchingRequests(new BaseTypeSpecification(this.targetType));
+                filters.Add(new BaseTypeSpecification(this.targetType));
             }
         }
 
         private void MatchByImplementedInterfaces()
         {
-            if (this.matchBy.HasFlag(Matching.ImplementedInterfaces))
+            if (ShouldMatchBy(Matching.ImplementedInterfaces))
             {
-                FreezeTypeForMatchingRequests(new BaseTypeSpecification(this.targetType));
+                filters.Add(new BaseTypeSpecification(this.targetType));
             }
         }
 
         private void MatchByPropertyName()
         {
-            if (this.matchBy.HasFlag(Matching.PropertyName))
+            if (ShouldMatchBy(Matching.PropertyName))
             {
-                FreezeTypeForMatchingRequests(new PropertyNameSpecification(this.identifier));
+                filters.Add(new PropertyNameSpecification(this.identifier));
             }
         }
 
-        private void FreezeTypeForMatchingRequests(IRequestSpecification criteria)
+        private bool ShouldMatchBy(Matching matcher)
+        {
+            return matcher.HasFlag(this.matchBy);
+        }
+
+        private void FreezeTypeForMatchingRequests()
         {
             this.fixture.Customizations.Add(
                 new FilteringSpecimenBuilder(
                     FreezeTargetType(),
-                    criteria));
+                    new OrRequestSpecification(filters)));
         }
 
         private ISpecimenBuilder FreezeTargetType()

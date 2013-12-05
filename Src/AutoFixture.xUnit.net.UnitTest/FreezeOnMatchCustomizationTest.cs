@@ -160,7 +160,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
         }
 
         [Fact]
-        public void FreezeByMatchingPropertyNameShouldReturnSameSpecimenForPropertyOfSameType()
+        public void FreezeByMatchingPropertyNameShouldReturnSameSpecimenForPropertyOfSameNameAndType()
         {
             // Fixture setup
             var frozenType = typeof(ConcreteType);
@@ -173,14 +173,14 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
-            var frozen = fixture.Create<ConcreteType>();
+            var frozen = fixture.Create<PropertyHolder<ConcreteType>>().Property;
             var requested = fixture.Create<PropertyHolder<ConcreteType>>().Property;
             Assert.Same(frozen, requested);
             // Teardown
         }
 
         [Fact]
-        public void FreezeByMatchingPropertyNameShouldReturnSameSpecimenForPropertyOfAssignableType()
+        public void FreezeByMatchingPropertyNameShouldReturnSameSpecimenForPropertyOfSameNameAndCompatibleType()
         {
             // Fixture setup
             var frozenType = typeof(ConcreteType);
@@ -193,9 +193,48 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
-            var frozen = fixture.Create<ConcreteType>();
+            var frozen = fixture.Create<PropertyHolder<ConcreteType>>().Property;
             var requested = fixture.Create<PropertyHolder<AbstractType>>().Property;
             Assert.Same(frozen, requested);
+            // Teardown
+        }
+
+        [Fact]
+        public void FreezeByMatchingPropertyNameShouldReturnDifferentSpecimensForPropertyOfDifferentNameAndSameType()
+        {
+            // Fixture setup
+            var frozenType = typeof(ConcreteType);
+            var propertyName = "SomeOtherProperty";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                propertyName,
+                Matching.PropertyName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            var frozen = fixture.Create<PropertyHolder<ConcreteType>>().Property;
+            var requested = fixture.Create<PropertyHolder<ConcreteType>>().Property;
+            Assert.NotSame(frozen, requested);
+            // Teardown
+        }
+
+        [Fact]
+        public void FreezeByMatchingPropertyNameShouldThrowForPropertyOfSameNameAndIncompatibleType()
+        {
+            // Fixture setup
+            var frozenType = typeof(string);
+            var propertyName = "Property";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                propertyName,
+                Matching.PropertyName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            Assert.Throws<ArgumentException>(() =>
+                   fixture.Create<PropertyHolder<ConcreteType>>());
             // Teardown
         }
     }
