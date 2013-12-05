@@ -60,6 +60,14 @@ namespace Ploeh.AutoFixture.Xunit
             MatchByFieldName();
         }
 
+        private void FreezeTypeForMatchingRequests()
+        {
+            this.fixture.Customizations.Add(
+                new FilteringSpecimenBuilder(
+                    FreezeTargetType(),
+                    new OrRequestSpecification(filters)));
+        }
+
         private void MatchByExactType()
         {
             if (ShouldMatchBy(Matching.ExactType))
@@ -111,14 +119,6 @@ namespace Ploeh.AutoFixture.Xunit
         private bool ShouldMatchBy(Matching criteria)
         {
             return criteria.HasFlag(this.matchBy);
-        }
-
-        private void FreezeTypeForMatchingRequests()
-        {
-            this.fixture.Customizations.Add(
-                new FilteringSpecimenBuilder(
-                    FreezeTargetType(),
-                    new OrRequestSpecification(filters)));
         }
 
         private ISpecimenBuilder FreezeTargetType()
