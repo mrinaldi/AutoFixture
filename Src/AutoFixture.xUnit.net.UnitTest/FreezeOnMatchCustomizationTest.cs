@@ -160,7 +160,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
         }
 
         [Fact]
-        public void FreezeByMatchingPropertyNameShouldReturnSameSpecimenForPropertyOfSameNameAndType()
+        public void FreezeByMatchingPropertyNameShouldReturnSameSpecimenForPropertiesOfSameNameAndType()
         {
             // Fixture setup
             var frozenType = typeof(ConcreteType);
@@ -180,7 +180,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
         }
 
         [Fact]
-        public void FreezeByMatchingPropertyNameShouldReturnSameSpecimenForPropertyOfSameNameAndCompatibleType()
+        public void FreezeByMatchingPropertyNameShouldReturnSameSpecimenForPropertiesOfSameNameAndCompatibleTypes()
         {
             // Fixture setup
             var frozenType = typeof(ConcreteType);
@@ -200,7 +200,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
         }
 
         [Fact]
-        public void FreezeByMatchingPropertyNameShouldReturnDifferentSpecimensForPropertyOfDifferentNameAndSameType()
+        public void FreezeByMatchingPropertyNameShouldReturnDifferentSpecimensForPropertiesOfDifferentNamesAndSameType()
         {
             // Fixture setup
             var frozenType = typeof(ConcreteType);
@@ -220,7 +220,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
         }
 
         [Fact]
-        public void FreezeByMatchingPropertyNameShouldThrowForPropertyOfSameNameAndIncompatibleType()
+        public void FreezeByMatchingPropertyNameShouldThrowForPropertiesOfSameNameAndIncompatibleTypes()
         {
             // Fixture setup
             var frozenType = typeof(string);
@@ -235,6 +235,85 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             // Verify outcome
             Assert.Throws<ArgumentException>(() =>
                    fixture.Create<PropertyHolder<ConcreteType>>());
+            // Teardown
+        }
+
+        [Fact]
+        public void FreezeByMatchingParameterNameShouldReturnSameSpecimenForParametersOfSameNameAndType()
+        {
+            // Fixture setup
+            var frozenType = typeof(ConcreteType);
+            var parameterName = "parameter";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                parameterName,
+                Matching.ParameterName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            var frozen = fixture.Create<SingleParameterType<ConcreteType>>().Parameter;
+            var requested = fixture.Create<SingleParameterType<ConcreteType>>().Parameter;
+            Assert.Same(frozen, requested);
+            // Teardown
+        }
+
+        [Fact]
+        public void FreezeByMatchingParameterNameShouldReturnSameSpecimenForParametersOfSameNameAndCompatibleTypes()
+        {
+            // Fixture setup
+            var frozenType = typeof(ConcreteType);
+            var parameterName = "parameter";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                parameterName,
+                Matching.ParameterName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            var frozen = fixture.Create<SingleParameterType<ConcreteType>>().Parameter;
+            var requested = fixture.Create<SingleParameterType<AbstractType>>().Parameter;
+            Assert.Same(frozen, requested);
+            // Teardown
+        }
+
+        [Fact]
+        public void FreezeByMatchingParameterNameShouldReturnDifferentSpecimensForParametersOfDifferentNamesAndSameType()
+        {
+            // Fixture setup
+            var frozenType = typeof(ConcreteType);
+            var parameterName = "SomeOtherParameter";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                parameterName,
+                Matching.ParameterName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            var frozen = fixture.Create<SingleParameterType<ConcreteType>>().Parameter;
+            var requested = fixture.Create<SingleParameterType<ConcreteType>>().Parameter;
+            Assert.NotSame(frozen, requested);
+            // Teardown
+        }
+
+        [Fact]
+        public void FreezeByMatchingParameterNameShouldThrowForParametersOfSameNameAndIncompatibleTypes()
+        {
+            // Fixture setup
+            var frozenType = typeof(string);
+            var parameterName = "parameter";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                parameterName,
+                Matching.ParameterName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            Assert.Throws<ArgumentException>(() =>
+                   fixture.Create<SingleParameterType<ConcreteType>>());
             // Teardown
         }
     }
