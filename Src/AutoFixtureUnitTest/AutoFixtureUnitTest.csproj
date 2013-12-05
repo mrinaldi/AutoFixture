@@ -94,7 +94,6 @@
     <Compile Include="CreatingAbstractClassWithPublicConstructorTests.cs" />
     <Compile Include="DataAnnotations\StringLengthArgumentSupportTests.cs" />
     <Compile Include="DelegatingRecursionHandler.cs" />
-    <Compile Include="FreezeOnMatchCustomizationTest.cs" />
     <Compile Include="Kernel\MultidimensionalArrayRelayTest.cs" />
     <Compile Include="Kernel\ObservableCollectionSpecificationTest.cs" />
     <Compile Include="Kernel\OmitArrayParameterRequestRelayTests.cs" />

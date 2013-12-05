@@ -1,7 +1,7 @@
 ﻿using System;
 using Ploeh.AutoFixture.Kernel;
 
-namespace Ploeh.AutoFixture
+namespace Ploeh.AutoFixture.Xunit
 {
     public class FreezeOnMatchCustomization : ICustomization
     {

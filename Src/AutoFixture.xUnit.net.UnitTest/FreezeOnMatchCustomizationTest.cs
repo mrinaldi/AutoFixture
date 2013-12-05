@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections;
-using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
 using Ploeh.TestTypeFoundation;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Ploeh.AutoFixtureUnitTest
+namespace Ploeh.AutoFixture.Xunit.UnitTest
 {
     public class FreezeOnMatchCustomizationTest
     {
