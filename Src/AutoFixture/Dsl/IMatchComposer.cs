@@ -9,5 +9,7 @@ namespace Ploeh.AutoFixture.Dsl
         IMatchComposer<T> ExactType();
 
         IMatchComposer<T> ArgumentName(string name);
+
+        IMatchComposer<T> PropertyName(string name);
     }
 }
