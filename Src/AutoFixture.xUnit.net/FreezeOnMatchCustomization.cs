@@ -1,29 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using Ploeh.AutoFixture.Dsl;
 using Ploeh.AutoFixture.Kernel;
 
 namespace Ploeh.AutoFixture.Xunit
 {
-    public class FreezeOnMatchCustomization : ICustomization
+    public class FreezeOnMatchCustomization<T> : ICustomization
     {
         private readonly Type targetType;
         private readonly string identifier;
         private readonly Matching matchBy;
-        private readonly ICollection<IRequestSpecification> filters;
         private IFixture fixture;
+        private IMatchComposer<T> filter;
 
         public FreezeOnMatchCustomization(
-            Type targetType,
-            string identifier = null,
-            Matching matchBy = Matching.ExactType)
+            Matching matchBy = Matching.ExactType,
+            string identifier = null)
         {
-            Require.IsNotNull(targetType, "targetType");
-
-            this.targetType = targetType;
-            this.identifier = identifier;
+            this.targetType = typeof(T);
             this.matchBy = matchBy;
-            this.filters = new Collection<IRequestSpecification>();
+            this.identifier = identifier;
         }
 
         public Type TargetType
@@ -41,38 +36,38 @@ namespace Ploeh.AutoFixture.Xunit
             Require.IsNotNull(fixture, "fixture");
 
             this.fixture = fixture;
-            MatchSpecimenByType();
-            MatchSpecimenByName();
+            this.filter = new MatchComposer<T>(FreezeTargetType());
+
+            MatchByType();
+            MatchByIdentifier();
             FreezeTypeForMatchingRequests();
         }
 
-        private void MatchSpecimenByType()
+        private ISpecimenBuilder FreezeTargetType()
+        {
+            var specimen = new SpecimenContext(this.fixture).Resolve(this.targetType);
+            return new FixedBuilder(specimen);
+        }
+
+        private void MatchByType()
         {
             MatchByExactType();
             MatchByBaseType();
             MatchByImplementedInterfaces();
         }
 
-        private void MatchSpecimenByName()
+        private void MatchByIdentifier()
         {
             MatchByPropertyName();
             MatchByParameterName();
             MatchByFieldName();
         }
 
-        private void FreezeTypeForMatchingRequests()
-        {
-            this.fixture.Customizations.Add(
-                new FilteringSpecimenBuilder(
-                    FreezeTargetType(),
-                    new OrRequestSpecification(filters)));
-        }
-
         private void MatchByExactType()
         {
             if (ShouldMatchBy(Matching.ExactType))
             {
-                filters.Add(new ExactTypeSpecification(this.targetType));
+                filter = filter.ByExactType();
             }
         }
 
@@ -80,7 +75,7 @@ namespace Ploeh.AutoFixture.Xunit
         {
             if (ShouldMatchBy(Matching.BaseType))
             {
-                filters.Add(new BaseTypeSpecification(this.targetType));
+                filter = filter.ByBaseType();
             }
         }
 
@@ -88,7 +83,7 @@ namespace Ploeh.AutoFixture.Xunit
         {
             if (ShouldMatchBy(Matching.ImplementedInterfaces))
             {
-                filters.Add(new BaseTypeSpecification(this.targetType));
+                filter = filter.ByBaseType();
             }
         }
 
@@ -96,7 +91,7 @@ namespace Ploeh.AutoFixture.Xunit
         {
             if (ShouldMatchBy(Matching.PropertyName))
             {
-                filters.Add(new PropertyNameSpecification(this.identifier));
+                filter = filter.ByPropertyName(this.identifier);
             }
         }
 
@@ -104,7 +99,7 @@ namespace Ploeh.AutoFixture.Xunit
         {
             if (ShouldMatchBy(Matching.ParameterName))
             {
-                filters.Add(new ParameterNameSpecification(this.identifier));
+                filter = filter.ByArgumentName(this.identifier);
             }
         }
 
@@ -112,7 +107,7 @@ namespace Ploeh.AutoFixture.Xunit
         {
             if (ShouldMatchBy(Matching.FieldName))
             {
-                filters.Add(new FieldNameSpecification(this.identifier));
+                filter = filter.ByFieldName(this.identifier);
             }
         }
 
@@ -121,10 +116,9 @@ namespace Ploeh.AutoFixture.Xunit
             return criteria.HasFlag(this.matchBy);
         }
 
-        private ISpecimenBuilder FreezeTargetType()
+        private void FreezeTypeForMatchingRequests()
         {
-            var specimen = new SpecimenContext(this.fixture).Resolve(this.targetType);
-            return new FixedBuilder(specimen);
+            this.fixture.Customize<T>(c => filter);
         }
     }
 }

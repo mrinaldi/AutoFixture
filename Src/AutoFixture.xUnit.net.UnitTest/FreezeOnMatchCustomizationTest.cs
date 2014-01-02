@@ -13,9 +13,8 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
         public void SutShouldBeCustomization()
         {
             // Fixture setup
-            var dummyType = typeof(object);
             // Exercise system
-            var sut = new FreezeOnMatchCustomization(dummyType);
+            var sut = new FreezeOnMatchCustomization<object>();
             // Verify outcome
             Assert.IsAssignableFrom<ICustomization>(sut);
             // Teardown
@@ -25,11 +24,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
         public void InitializeWithTargetTypeShouldSetCorrespondingProperty()
         {
             // Fixture setup
-            var targetType = typeof(object);
             // Exercise system
-            var sut = new FreezeOnMatchCustomization(targetType);
+            var sut = new FreezeOnMatchCustomization<object>();
             // Verify outcome
-            Assert.Equal(targetType, sut.TargetType);
+            Assert.Equal(typeof(object), sut.TargetType);
         }
 
         [Fact]
@@ -37,7 +35,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
         {
             // Fixture setup
             // Exercise system
-            var sut = new FreezeOnMatchCustomization(typeof(string));
+            var sut = new FreezeOnMatchCustomization<string>();
             // Verify outcome
             Assert.Equal(Matching.ExactType, sut.MatchBy);
         }
@@ -46,30 +44,19 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
         public void InitializeWithTargetTypeAndMatchByShouldSetCorrespondingProperties()
         {
             // Fixture setup
-            var targetType = typeof(object);
             var matcher = Matching.BaseType;
             // Exercise system
-            var sut = new FreezeOnMatchCustomization(targetType, matchBy: matcher);
+            var sut = new FreezeOnMatchCustomization<object>(matcher);
             // Verify outcome
-            Assert.Equal(targetType, sut.TargetType);
+            Assert.Equal(typeof(object), sut.TargetType);
             Assert.Equal(matcher, sut.MatchBy);
-        }
-
-        [Fact]
-        public void InitializeWithNullTargetTypeShouldThrowArgumentNullException()
-        {
-            // Fixture setup
-            // Exercise system and verify outcome
-            Assert.Throws<ArgumentNullException>(() =>
-                new FreezeOnMatchCustomization(null));
-            // Teardown
         }
 
         [Fact]
         public void CustomizeWithNullFixtureShouldThrowArgumentNullException()
         {
             // Fixture setup
-            var sut = new FreezeOnMatchCustomization(typeof(object));
+            var sut = new FreezeOnMatchCustomization<object>();
             // Exercise system and verify outcome
             Assert.Throws<ArgumentNullException>(() =>
                 sut.Customize(null));
@@ -90,9 +77,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             // Fixture setup
             var fixture = new Fixture();
             var context = new SpecimenContext(fixture);
-            var sut = new FreezeOnMatchCustomization(
-                frozenType,
-                matchBy: Matching.ExactType);
+            var sut = CreateFreezeOnMatchCustomization(frozenType, Matching.ExactType);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -118,9 +103,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             // Fixture setup
             var fixture = new Fixture();
             var context = new SpecimenContext(fixture);
-            var sut = new FreezeOnMatchCustomization(
-                frozenType,
-                matchBy: Matching.BaseType);
+            var sut = CreateFreezeOnMatchCustomization(frozenType, Matching.BaseType);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -145,9 +128,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             // Fixture setup
             var fixture = new Fixture();
             var context = new SpecimenContext(fixture);
-            var sut = new FreezeOnMatchCustomization(
-                frozenType,
-                matchBy: Matching.ImplementedInterfaces);
+            var sut = CreateFreezeOnMatchCustomization(frozenType, Matching.ImplementedInterfaces);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -166,10 +147,7 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(ConcreteType);
             var propertyName = "Property";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
-                frozenType,
-                propertyName,
-                Matching.PropertyName);
+            var sut = CreateFreezeOnMatchCustomization(frozenType, Matching.PropertyName, propertyName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -186,10 +164,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(ConcreteType);
             var propertyName = "Property";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                propertyName,
-                Matching.PropertyName);
+                Matching.PropertyName,
+                propertyName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -206,10 +184,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(ConcreteType);
             var propertyName = "SomeOtherProperty";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                propertyName,
-                Matching.PropertyName);
+                Matching.PropertyName,
+                propertyName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -226,10 +204,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(string);
             var propertyName = "Property";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                propertyName,
-                Matching.PropertyName);
+                Matching.PropertyName,
+                propertyName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -245,10 +223,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(ConcreteType);
             var parameterName = "parameter";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                parameterName,
-                Matching.ParameterName);
+                Matching.ParameterName,
+                parameterName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -265,10 +243,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(ConcreteType);
             var parameterName = "parameter";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                parameterName,
-                Matching.ParameterName);
+                Matching.ParameterName,
+                parameterName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -285,10 +263,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(ConcreteType);
             var parameterName = "SomeOtherParameter";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                parameterName,
-                Matching.ParameterName);
+                Matching.ParameterName,
+                parameterName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -305,10 +283,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(string);
             var parameterName = "parameter";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                parameterName,
-                Matching.ParameterName);
+                Matching.ParameterName,
+                parameterName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -324,10 +302,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(ConcreteType);
             var fieldName = "Field";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                fieldName,
-                Matching.FieldName);
+                Matching.FieldName,
+                fieldName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -344,10 +322,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(ConcreteType);
             var fieldName = "Field";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                fieldName,
-                Matching.FieldName);
+                Matching.FieldName,
+                fieldName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -364,10 +342,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(ConcreteType);
             var fieldName = "SomeOtherField";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                fieldName,
-                Matching.FieldName);
+                Matching.FieldName,
+                fieldName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -384,10 +362,10 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
             var frozenType = typeof(string);
             var fieldName = "Field";
             var fixture = new Fixture();
-            var sut = new FreezeOnMatchCustomization(
+            var sut = CreateFreezeOnMatchCustomization(
                 frozenType,
-                fieldName,
-                Matching.FieldName);
+                Matching.FieldName,
+                fieldName);
             // Exercise system
             sut.Customize(fixture);
             // Verify outcome
@@ -395,5 +373,15 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
                    fixture.Create<FieldHolder<ConcreteType>>());
             // Teardown
         }
+
+        private static ICustomization CreateFreezeOnMatchCustomization(
+            Type frozenType,
+            Matching matchBy = Matching.ExactType,
+            string identifier = null)
+        {
+            var type = typeof(FreezeOnMatchCustomization<>).MakeGenericType(frozenType);
+            return (ICustomization)Activator.CreateInstance(type, matchBy, identifier);
+        }
+
     }
 }
