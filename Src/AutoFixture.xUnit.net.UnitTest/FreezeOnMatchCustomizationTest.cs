@@ -316,5 +316,84 @@ namespace Ploeh.AutoFixture.Xunit.UnitTest
                    fixture.Create<SingleParameterType<ConcreteType>>());
             // Teardown
         }
+
+        [Fact]
+        public void FreezeByMatchingFieldNameShouldReturnSameSpecimenForFieldsOfSameNameAndType()
+        {
+            // Fixture setup
+            var frozenType = typeof(ConcreteType);
+            var fieldName = "Field";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                fieldName,
+                Matching.FieldName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            var frozen = fixture.Create<FieldHolder<ConcreteType>>().Field;
+            var requested = fixture.Create<FieldHolder<ConcreteType>>().Field;
+            Assert.Same(frozen, requested);
+            // Teardown
+        }
+
+        [Fact]
+        public void FreezeByMatchingFieldNameShouldReturnSameSpecimenForFieldsOfSameNameAndCompatibleTypes()
+        {
+            // Fixture setup
+            var frozenType = typeof(ConcreteType);
+            var fieldName = "Field";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                fieldName,
+                Matching.FieldName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            var frozen = fixture.Create<FieldHolder<ConcreteType>>().Field;
+            var requested = fixture.Create<FieldHolder<AbstractType>>().Field;
+            Assert.Same(frozen, requested);
+            // Teardown
+        }
+
+        [Fact]
+        public void FreezeByMatchingFieldNameShouldReturnDifferentSpecimensForFieldsOfDifferentNamesAndSameType()
+        {
+            // Fixture setup
+            var frozenType = typeof(ConcreteType);
+            var fieldName = "SomeOtherField";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                fieldName,
+                Matching.FieldName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            var frozen = fixture.Create<FieldHolder<ConcreteType>>().Field;
+            var requested = fixture.Create<FieldHolder<ConcreteType>>().Field;
+            Assert.NotSame(frozen, requested);
+            // Teardown
+        }
+
+        [Fact]
+        public void FreezeByMatchingFieldNameShouldThrowForFieldsOfSameNameAndIncompatibleTypes()
+        {
+            // Fixture setup
+            var frozenType = typeof(string);
+            var fieldName = "Field";
+            var fixture = new Fixture();
+            var sut = new FreezeOnMatchCustomization(
+                frozenType,
+                fieldName,
+                Matching.FieldName);
+            // Exercise system
+            sut.Customize(fixture);
+            // Verify outcome
+            Assert.Throws<ArgumentException>(() =>
+                   fixture.Create<FieldHolder<ConcreteType>>());
+            // Teardown
+        }
     }
 }

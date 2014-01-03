@@ -57,6 +57,7 @@ namespace Ploeh.AutoFixture.Xunit
         {
             MatchByPropertyName();
             MatchByParameterName();
+            MatchByFieldName();
         }
 
         private void MatchByExactType()
@@ -96,6 +97,14 @@ namespace Ploeh.AutoFixture.Xunit
             if (ShouldMatchBy(Matching.ParameterName))
             {
                 filters.Add(new ParameterNameSpecification(this.identifier));
+            }
+        }
+
+        private void MatchByFieldName()
+        {
+            if (ShouldMatchBy(Matching.FieldName))
+            {
+                filters.Add(new FieldNameSpecification(this.identifier));
             }
         }
 

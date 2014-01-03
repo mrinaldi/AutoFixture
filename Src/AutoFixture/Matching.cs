@@ -9,6 +9,7 @@ namespace Ploeh.AutoFixture
         BaseType = 2,
         ImplementedInterfaces = 4,
         PropertyName = 8,
-        ParameterName = 16
+        ParameterName = 16,
+        FieldName = 32
     }
 }
