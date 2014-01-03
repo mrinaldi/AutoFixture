@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using Ploeh.AutoFixture.Dsl;
 using Ploeh.AutoFixture.Kernel;
 using Ploeh.AutoFixtureUnitTest.Kernel;
@@ -132,13 +133,10 @@ namespace Ploeh.AutoFixtureUnitTest.Dsl
             {
                 OnCreate = (r, c) => expected
             };
-            var sut = new MatchComposer<object>(builder).ByArgumentName("obj");
+            var sut = new MatchComposer<object>(builder).ByArgumentName("parameter");
             // Exercise system
-            var matchingParameterRequest = typeof(ConcreteType)
-                .GetConstructor(new[] { typeof(object) })
-                .GetParameters()
-                .First();
-            var actual = sut.Create(matchingParameterRequest, new DelegatingSpecimenContext());
+            var request = ParameterRequest<object>("parameter");
+            var actual = sut.Create(request, new DelegatingSpecimenContext());
             // Verify outcome
             Assert.Same(expected, actual);
             // Teardown
@@ -155,13 +153,10 @@ namespace Ploeh.AutoFixtureUnitTest.Dsl
             };
             var sut = new MatchComposer<object>(builder).ByArgumentName("someOtherName");
             // Exercise system
-            var otherParameterRequest = typeof(ConcreteType)
-                .GetConstructor(new[] { typeof(object) })
-                .GetParameters()
-                .First();
-            var actual = sut.Create(otherParameterRequest, new DelegatingSpecimenContext());
+            var request = ParameterRequest<object>("parameter");
+            var actual = sut.Create(request, new DelegatingSpecimenContext());
             // Verify outcome
-            Assert.Equal(new NoSpecimen(otherParameterRequest), actual);
+            Assert.Equal(new NoSpecimen(request), actual);
             // Teardown
         }
 
@@ -176,8 +171,8 @@ namespace Ploeh.AutoFixtureUnitTest.Dsl
             };
             var sut = new MatchComposer<object>(builder).ByPropertyName("Property");
             // Exercise system
-            var matchingPropertyRequest = typeof(PropertyHolder<object>).GetProperty("Property");
-            var actual = sut.Create(matchingPropertyRequest, new DelegatingSpecimenContext());
+            var request = PropertyRequest<object>("Property");
+            var actual = sut.Create(request, new DelegatingSpecimenContext());
             // Verify outcome
             Assert.Same(expected, actual);
             // Teardown
@@ -194,10 +189,10 @@ namespace Ploeh.AutoFixtureUnitTest.Dsl
             };
             var sut = new MatchComposer<object>(builder).ByPropertyName("someOtherName");
             // Exercise system
-            var otherPropertyRequest = typeof(PropertyHolder<object>).GetProperty("Property");
-            var actual = sut.Create(otherPropertyRequest, new DelegatingSpecimenContext());
+            var request = PropertyRequest<object>("Property");
+            var actual = sut.Create(request, new DelegatingSpecimenContext());
             // Verify outcome
-            Assert.Equal(new NoSpecimen(otherPropertyRequest), actual);
+            Assert.Equal(new NoSpecimen(request), actual);
             // Teardown
         }
 
@@ -212,8 +207,8 @@ namespace Ploeh.AutoFixtureUnitTest.Dsl
             };
             var sut = new MatchComposer<object>(builder).ByFieldName("Field");
             // Exercise system
-            var matchingFieldRequest = typeof(FieldHolder<object>).GetField("Field");
-            var actual = sut.Create(matchingFieldRequest, new DelegatingSpecimenContext());
+            var request = FieldRequest<object>("Field");
+            var actual = sut.Create(request, new DelegatingSpecimenContext());
             // Verify outcome
             Assert.Same(expected, actual);
             // Teardown
@@ -230,11 +225,31 @@ namespace Ploeh.AutoFixtureUnitTest.Dsl
             };
             var sut = new MatchComposer<object>(builder).ByFieldName("someOtherName");
             // Exercise system
-            var otherFieldRequest = typeof(FieldHolder<object>).GetField("Field");
-            var actual = sut.Create(otherFieldRequest, new DelegatingSpecimenContext());
+            var request = FieldRequest<object>("Field");
+            var actual = sut.Create(request, new DelegatingSpecimenContext());
             // Verify outcome
-            Assert.Equal(new NoSpecimen(otherFieldRequest), actual);
+            Assert.Equal(new NoSpecimen(request), actual);
             // Teardown
+        }
+
+        private static ParameterInfo ParameterRequest<T>(string parameterName)
+        {
+            return typeof(SingleParameterType<T>)
+                   .GetConstructor(new[] { typeof(T) })
+                   .GetParameters()
+                   .Single(p => p.Name == parameterName);
+        }
+
+        private static PropertyInfo PropertyRequest<T>(string propertyName)
+        {
+            return typeof(PropertyHolder<T>)
+                   .GetProperty(propertyName);
+        }
+
+        private static FieldInfo FieldRequest<T>(string fieldName)
+        {
+            return typeof(FieldHolder<T>)
+                   .GetField(fieldName);
         }
     }
 }
