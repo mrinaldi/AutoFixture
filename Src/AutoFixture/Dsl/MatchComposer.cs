@@ -6,6 +6,7 @@ namespace Ploeh.AutoFixture.Dsl
     {
         private readonly ISpecimenBuilder builder;
         private IRequestSpecification matcher;
+        private bool orExpression;
 
         public MatchComposer(ISpecimenBuilder builder)
         {
@@ -24,6 +25,15 @@ namespace Ploeh.AutoFixture.Dsl
                    .Create(request, context);
         }
 
+        public IMatchComposer<T> Or
+        {
+            get
+            {
+                this.orExpression = true;
+                return this;
+            }
+        }
+
         public IMatchComposer<T> ByBaseType()
         {
             this.matcher = new BaseTypeSpecification(typeof(T));
@@ -38,20 +48,27 @@ namespace Ploeh.AutoFixture.Dsl
 
         public IMatchComposer<T> ByArgumentName(string name)
         {
-            this.matcher = new ParameterNameSpecification(name);
+            this.matcher = AddCondition(new ParameterNameSpecification(name));
             return this;
         }
 
         public IMatchComposer<T> ByPropertyName(string name)
         {
-            this.matcher = new PropertyNameSpecification(name);
+            this.matcher = AddCondition(new PropertyNameSpecification(name));
             return this;
         }
 
         public IMatchComposer<T> ByFieldName(string name)
         {
-            this.matcher = new FieldNameSpecification(name);
+            this.matcher = AddCondition(new FieldNameSpecification(name));
             return this;
+        }
+
+        private IRequestSpecification AddCondition(IRequestSpecification condition)
+        {
+            return this.orExpression
+                ? new OrRequestSpecification(this.matcher, condition)
+                : condition;
         }
     }
 }

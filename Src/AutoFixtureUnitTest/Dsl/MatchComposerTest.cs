@@ -232,6 +232,28 @@ namespace Ploeh.AutoFixtureUnitTest.Dsl
             // Teardown
         }
 
+        [Fact]
+        public void CreateWithMatchingByAnyOfMultipleMemberNamesReturnsSpecimenForMatchingRequests()
+        {
+            // Fixture setup
+            var expected = new object();
+            var context = new DelegatingSpecimenContext();
+            var builder = new DelegatingSpecimenBuilder
+            {
+                OnCreate = (r, c) => expected
+            };
+            var sut = new MatchComposer<object>(builder)
+                .ByArgumentName("parameter")
+                .Or.ByPropertyName("Property")
+                .Or.ByFieldName("Field");
+            // Exercise system
+            // Verify outcome
+            Assert.Same(expected, sut.Create(ParameterRequest<object>("parameter"), context));
+            Assert.Same(expected, sut.Create(PropertyRequest<object>("Property"), context));
+            Assert.Same(expected, sut.Create(FieldRequest<object>("Field"), context));
+            // Teardown
+        }
+
         private static ParameterInfo ParameterRequest<T>(string parameterName)
         {
             return typeof(SingleParameterType<T>)
